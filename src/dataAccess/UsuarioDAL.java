@@ -15,7 +15,7 @@ public class UsuarioDAL {
 
     // Crear
     public boolean insertar(Usuario usuario) throws SQLException {
-        String sql = "INSERT INTO Usuario (Usuario, Nombre, Telefono, Clave, Estado) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Usuario (idUsuario, Nombre, Telefono, Clave, Estado) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, usuario.getIdUsuario());
             stmt.setString(2, usuario.getNombre());
@@ -34,7 +34,7 @@ public class UsuarioDAL {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return new Usuario(
-                            rs.getInt("Usuario"),
+                            rs.getInt("idUsuario"),
                             rs.getString("Nombre"),
                             rs.getString("Telefono"),
                             rs.getString("Clave"),
@@ -54,7 +54,7 @@ public class UsuarioDAL {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 lista.add(new Usuario(
-                        rs.getInt("Usuario"),
+                        rs.getInt("idUsuario"),
                         rs.getString("Nombre"),
                         rs.getString("Telefono"),
                         rs.getString("Clave"),
