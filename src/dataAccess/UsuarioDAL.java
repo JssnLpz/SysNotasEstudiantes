@@ -15,20 +15,19 @@ public class UsuarioDAL {
 
     // Crear
     public boolean insertar(Usuario usuario) throws SQLException {
-        String sql = "INSERT INTO Usuario (idUsuario, Nombre, Telefono, Clave, Estado) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Usuario (Nombre, Telefono, Clave, Estado) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-            stmt.setInt(1, usuario.getIdUsuario());
-            stmt.setString(2, usuario.getNombre());
-            stmt.setString(3, usuario.getTelefono());
-            stmt.setString(4, usuario.getClave());
-            stmt.setInt(5, usuario.getEstado());
+            stmt.setString(1, usuario.getNombre());
+            stmt.setString(2, usuario.getTelefono());
+            stmt.setString(3, usuario.getClave());
+            stmt.setInt(4, usuario.getEstado());
             return stmt.executeUpdate() > 0;
         }
     }
 
     // Leer (uno por ID)
     public Usuario obtenerPorId(int id) throws SQLException {
-        String sql = "SELECT * FROM Usuario WHERE Usuario = ?";
+        String sql = "SELECT * FROM Usuario WHERE idUsuario = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -67,7 +66,7 @@ public class UsuarioDAL {
 
     // Actualizar
     public boolean actualizar(Usuario usuario) throws SQLException {
-        String sql = "UPDATE Usuario SET Nombre = ?, Telefono = ?, Clave = ?, Estado = ? WHERE Usuario = ?";
+        String sql = "UPDATE Usuario SET Nombre = ?, Telefono = ?, Clave = ?, Estado = ? WHERE idUsuario = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setString(1, usuario.getNombre());
             stmt.setString(2, usuario.getTelefono());
@@ -80,7 +79,7 @@ public class UsuarioDAL {
 
     // Eliminar
     public boolean eliminar(int id) throws SQLException {
-        String sql = "DELETE FROM Usuario WHERE Usuario = ?";
+        String sql = "DELETE FROM Usuario WHERE idUsuario = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
