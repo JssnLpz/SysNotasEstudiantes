@@ -1,7 +1,8 @@
 package Presentation;
 
-import dataAccess.UsuarioDAL;
+import businessLogic.UsuarioServices;
 import dataAccess.Conexion;
+import dataAccess.UsuarioDAL;
 import entities.Usuario;
 
 import javax.swing.*;
@@ -13,7 +14,7 @@ import java.util.List;
 public class FrmUsuario extends JFrame {
 
     private JTable tabla;
-    private UsuarioDAL dao;
+    private UsuarioServices services;
     private Connection conexion;
 
     public FrmUsuario() {
@@ -36,7 +37,8 @@ public class FrmUsuario extends JFrame {
 
         try {
             conexion = Conexion.getConnection();
-            dao = new UsuarioDAL(conexion);
+            UsuarioDAL dao = new UsuarioDAL(conexion);
+            services = new UsuarioServices(dao);
         } catch (SQLException e) {
             mostrarError("Error al conectar con la base de datos: " + e.getMessage());
             return;
@@ -52,7 +54,7 @@ public class FrmUsuario extends JFrame {
 
     private void cargarTabla() {
         try {
-            List<Usuario> listaUsuarios = dao.obtenerTodos();
+            List<Usuario> listaUsuarios = services.obtenerTodos();
 
             String[] columnas = {"ID Usuario", "Nombre", "Teléfono", "Estado"};
             Object[][] datos = new Object[listaUsuarios.size()][4];
@@ -124,15 +126,12 @@ public class FrmUsuario extends JFrame {
                 nuevo.setClave(txtClave.getText());
                 nuevo.setEstado(cmbEstado.getSelectedItem().equals("Activo") ? 1 : 0);
 
-                if (dao.insertar(nuevo)) {
-                    JOptionPane.showMessageDialog(this, "Usuario agregado correctamente");
-                    recargarTabla();
-                } else {
-                    mostrarError("No se pudo agregar el usuario.");
-                }
+                services.insertar(nuevo);
 
-            } catch (SQLException e) {
-                mostrarError("Error al insertar usuario: " + e.getMessage());
+                JOptionPane.showMessageDialog(this, "Usuario agregado correctamente");
+                recargarTabla();
+            } catch (Exception e) {
+                mostrarError("Error al agregar usuario: " + e.getMessage());
             }
         }
     }
@@ -145,7 +144,7 @@ public class FrmUsuario extends JFrame {
         }
 
         try {
-            Usuario usuario = dao.obtenerPorId(id);
+            Usuario usuario = services.obtenerPorId(id);
             if (usuario == null) {
                 mostrarError("Usuario no encontrado.");
                 return;
@@ -153,7 +152,7 @@ public class FrmUsuario extends JFrame {
 
             JTextField txtNombre = new JTextField(usuario.getNombre());
             JTextField txtTelefono = new JTextField(usuario.getTelefono());
-            JTextField txtClave = new JTextField(usuario.getClave());
+            JTextField txtClave = new JTextField(); // pedir nueva clave
             String[] estados = {"Activo", "Inactivo"};
             JComboBox<String> cmbEstado = new JComboBox<>(estados);
             cmbEstado.setSelectedIndex(usuario.getEstado() == 1 ? 0 : 1);
@@ -163,7 +162,7 @@ public class FrmUsuario extends JFrame {
             panel.add(txtNombre);
             panel.add(new JLabel("Teléfono:"));
             panel.add(txtTelefono);
-            panel.add(new JLabel("Clave:"));
+            panel.add(new JLabel("Nueva Clave:"));
             panel.add(txtClave);
             panel.add(new JLabel("Estado:"));
             panel.add(cmbEstado);
@@ -177,15 +176,13 @@ public class FrmUsuario extends JFrame {
                 usuario.setClave(txtClave.getText());
                 usuario.setEstado(cmbEstado.getSelectedItem().equals("Activo") ? 1 : 0);
 
-                if (dao.actualizar(usuario)) {
-                    JOptionPane.showMessageDialog(this, "Usuario actualizado correctamente.");
-                    recargarTabla();
-                } else {
-                    mostrarError("No se pudo actualizar el usuario.");
-                }
+                services.actualizar(usuario);
+
+                JOptionPane.showMessageDialog(this, "Usuario actualizado correctamente.");
+                recargarTabla();
             }
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             mostrarError("Error al editar usuario: " + ex.getMessage());
         }
     }
@@ -202,7 +199,7 @@ public class FrmUsuario extends JFrame {
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                if (dao.eliminar(id)) {
+                if (services.eliminar(id)) {
                     JOptionPane.showMessageDialog(this, "Usuario eliminado correctamente.");
                     recargarTabla();
                 } else {
@@ -231,5 +228,3 @@ public class FrmUsuario extends JFrame {
         });
     }
 }
-
-
