@@ -18,22 +18,34 @@ public class FrmUsuario extends JFrame {
     private Connection conexion;
 
     public FrmUsuario() {
-        setTitle("Lista de Usuarios");
-        setSize(600, 400);
+        setTitle("\uD83D\uDC64 Lista de Usuarios");
+        setSize(700, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10, 10));
 
-        // Panel de botones
-        JPanel panelBotones = new JPanel();
-        JButton btnAgregar = new JButton("Agregar");
-        JButton btnEditar = new JButton("Editar");
-        JButton btnEliminar = new JButton("Eliminar");
+        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
+        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(contenedor);
+
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnAgregar = new JButton("➕ Agregar");
+        JButton btnEditar = new JButton("✏️ Editar");
+        JButton btnEliminar = new JButton("🗑️ Eliminar");
+
+        JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
+        for (JButton btn : botones) {
+            btn.setFocusPainted(false);
+            btn.setBackground(new Color(59, 89, 182));
+            btn.setForeground(Color.WHITE);
+            btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            btn.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        }
 
         panelBotones.add(btnAgregar);
         panelBotones.add(btnEditar);
         panelBotones.add(btnEliminar);
-        add(panelBotones, BorderLayout.SOUTH);
+        contenedor.add(panelBotones, BorderLayout.SOUTH);
 
         try {
             conexion = Conexion.getConnection();
@@ -44,15 +56,14 @@ public class FrmUsuario extends JFrame {
             return;
         }
 
-        cargarTabla();
+        cargarTabla(contenedor);
 
-        // Botones
         btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
         btnEditar.addActionListener(e -> mostrarFormularioEditar());
         btnEliminar.addActionListener(e -> eliminarUsuarioSeleccionado());
     }
 
-    private void cargarTabla() {
+    private void cargarTabla(JPanel contenedor) {
         try {
             List<Usuario> listaUsuarios = services.obtenerTodos();
 
@@ -68,8 +79,15 @@ public class FrmUsuario extends JFrame {
             }
 
             tabla = new JTable(datos, columnas);
+            tabla.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            tabla.setRowHeight(24);
+            tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+            tabla.getTableHeader().setBackground(new Color(200, 221, 242));
+            tabla.setGridColor(new Color(230, 230, 230));
+            tabla.setShowVerticalLines(false);
+
             JScrollPane scroll = new JScrollPane(tabla);
-            add(scroll, BorderLayout.CENTER);
+            contenedor.add(scroll, BorderLayout.CENTER);
 
         } catch (SQLException e) {
             mostrarError("Error al obtener usuarios: " + e.getMessage());
@@ -78,17 +96,30 @@ public class FrmUsuario extends JFrame {
 
     private void recargarTabla() {
         getContentPane().removeAll();
-        setLayout(new BorderLayout());
-        cargarTabla();
+        setLayout(new BorderLayout(10, 10));
+        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
+        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(contenedor);
+        cargarTabla(contenedor);
 
-        JPanel panelBotones = new JPanel();
-        JButton btnAgregar = new JButton("Agregar");
-        JButton btnEditar = new JButton("Editar");
-        JButton btnEliminar = new JButton("Eliminar");
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnAgregar = new JButton("➕ Agregar");
+        JButton btnEditar = new JButton("✏️ Editar");
+        JButton btnEliminar = new JButton("🗑️ Eliminar");
+
+        JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
+        for (JButton btn : botones) {
+            btn.setFocusPainted(false);
+            btn.setBackground(new Color(59, 89, 182));
+            btn.setForeground(Color.WHITE);
+            btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            btn.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        }
+
         panelBotones.add(btnAgregar);
         panelBotones.add(btnEditar);
         panelBotones.add(btnEliminar);
-        add(panelBotones, BorderLayout.SOUTH);
+        contenedor.add(panelBotones, BorderLayout.SOUTH);
 
         btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
         btnEditar.addActionListener(e -> mostrarFormularioEditar());
@@ -105,7 +136,8 @@ public class FrmUsuario extends JFrame {
         String[] estados = {"Activo", "Inactivo"};
         JComboBox<String> cmbEstado = new JComboBox<>(estados);
 
-        JPanel panel = new JPanel(new GridLayout(0, 1));
+        JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.add(new JLabel("Nombre:"));
         panel.add(txtNombre);
         panel.add(new JLabel("Teléfono:"));
@@ -152,12 +184,13 @@ public class FrmUsuario extends JFrame {
 
             JTextField txtNombre = new JTextField(usuario.getNombre());
             JTextField txtTelefono = new JTextField(usuario.getTelefono());
-            JTextField txtClave = new JTextField(); // pedir nueva clave
+            JTextField txtClave = new JTextField();
             String[] estados = {"Activo", "Inactivo"};
             JComboBox<String> cmbEstado = new JComboBox<>(estados);
             cmbEstado.setSelectedIndex(usuario.getEstado() == 1 ? 0 : 1);
 
-            JPanel panel = new JPanel(new GridLayout(0, 1));
+            JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
+            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             panel.add(new JLabel("Nombre:"));
             panel.add(txtNombre);
             panel.add(new JLabel("Teléfono:"));
@@ -228,3 +261,4 @@ public class FrmUsuario extends JFrame {
         });
     }
 }
+
