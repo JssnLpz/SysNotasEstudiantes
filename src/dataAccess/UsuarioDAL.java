@@ -1,7 +1,6 @@
 package dataAccess;
 
 import entities.Usuario;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +34,8 @@ public class UsuarioDAL {
                     return new Usuario(
                             rs.getInt("idUsuario"),
                             rs.getString("Nombre"),
-                            rs.getString("Telefono"),
-                            rs.getString("Clave"),
+                            rs.getString("Clave"),     // <- CORREGIDO: primero la clave
+                            rs.getString("Telefono"),  // <- luego el teléfono
                             rs.getInt("Estado")
                     );
                 }
@@ -55,8 +54,8 @@ public class UsuarioDAL {
                 lista.add(new Usuario(
                         rs.getInt("idUsuario"),
                         rs.getString("Nombre"),
-                        rs.getString("Telefono"),
-                        rs.getString("Clave"),
+                        rs.getString("Clave"),     // <- CORREGIDO
+                        rs.getString("Telefono"),  // <- CORREGIDO
                         rs.getInt("Estado")
                 ));
             }
@@ -106,3 +105,4 @@ public class UsuarioDAL {
     }
 
 }
+

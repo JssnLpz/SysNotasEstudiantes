@@ -1,7 +1,8 @@
 package Presentation;
 
-import dataAccess.UsuarioDAL;
+import businessLogic.UsuarioServices;
 import dataAccess.Conexion;
+import dataAccess.UsuarioDAL;
 import entities.Usuario;
 
 import javax.swing.*;
@@ -13,46 +14,58 @@ import java.util.List;
 public class FrmUsuario extends JFrame {
 
     private JTable tabla;
-    private UsuarioDAL dao;
+    private UsuarioServices services;
     private Connection conexion;
 
     public FrmUsuario() {
-        setTitle("Lista de Usuarios");
-        setSize(600, 400);
+        setTitle("\uD83D\uDC64 Lista de Usuarios");
+        setSize(700, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10, 10));
 
-        // Panel de botones
-        JPanel panelBotones = new JPanel();
-        JButton btnAgregar = new JButton("Agregar");
-        JButton btnEditar = new JButton("Editar");
-        JButton btnEliminar = new JButton("Eliminar");
+        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
+        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(contenedor);
+
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnAgregar = new JButton("➕ Agregar");
+        JButton btnEditar = new JButton("✏️ Editar");
+        JButton btnEliminar = new JButton("🗑️ Eliminar");
+
+        JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
+        for (JButton btn : botones) {
+            btn.setFocusPainted(false);
+            btn.setBackground(new Color(59, 89, 182));
+            btn.setForeground(Color.WHITE);
+            btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            btn.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        }
 
         panelBotones.add(btnAgregar);
         panelBotones.add(btnEditar);
         panelBotones.add(btnEliminar);
-        add(panelBotones, BorderLayout.SOUTH);
+        contenedor.add(panelBotones, BorderLayout.SOUTH);
 
         try {
             conexion = Conexion.getConnection();
-            dao = new UsuarioDAL(conexion);
+            UsuarioDAL dao = new UsuarioDAL(conexion);
+            services = new UsuarioServices(dao);
         } catch (SQLException e) {
             mostrarError("Error al conectar con la base de datos: " + e.getMessage());
             return;
         }
 
-        cargarTabla();
+        cargarTabla(contenedor);
 
-        // Botones
         btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
         btnEditar.addActionListener(e -> mostrarFormularioEditar());
         btnEliminar.addActionListener(e -> eliminarUsuarioSeleccionado());
     }
 
-    private void cargarTabla() {
+    private void cargarTabla(JPanel contenedor) {
         try {
-            List<Usuario> listaUsuarios = dao.obtenerTodos();
+            List<Usuario> listaUsuarios = services.obtenerTodos();
 
             String[] columnas = {"ID Usuario", "Nombre", "Teléfono", "Estado"};
             Object[][] datos = new Object[listaUsuarios.size()][4];
@@ -66,8 +79,15 @@ public class FrmUsuario extends JFrame {
             }
 
             tabla = new JTable(datos, columnas);
+            tabla.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            tabla.setRowHeight(24);
+            tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+            tabla.getTableHeader().setBackground(new Color(200, 221, 242));
+            tabla.setGridColor(new Color(230, 230, 230));
+            tabla.setShowVerticalLines(false);
+
             JScrollPane scroll = new JScrollPane(tabla);
-            add(scroll, BorderLayout.CENTER);
+            contenedor.add(scroll, BorderLayout.CENTER);
 
         } catch (SQLException e) {
             mostrarError("Error al obtener usuarios: " + e.getMessage());
@@ -76,17 +96,30 @@ public class FrmUsuario extends JFrame {
 
     private void recargarTabla() {
         getContentPane().removeAll();
-        setLayout(new BorderLayout());
-        cargarTabla();
+        setLayout(new BorderLayout(10, 10));
+        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
+        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(contenedor);
+        cargarTabla(contenedor);
 
-        JPanel panelBotones = new JPanel();
-        JButton btnAgregar = new JButton("Agregar");
-        JButton btnEditar = new JButton("Editar");
-        JButton btnEliminar = new JButton("Eliminar");
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnAgregar = new JButton("➕ Agregar");
+        JButton btnEditar = new JButton("✏️ Editar");
+        JButton btnEliminar = new JButton("🗑️ Eliminar");
+
+        JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
+        for (JButton btn : botones) {
+            btn.setFocusPainted(false);
+            btn.setBackground(new Color(59, 89, 182));
+            btn.setForeground(Color.WHITE);
+            btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            btn.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        }
+
         panelBotones.add(btnAgregar);
         panelBotones.add(btnEditar);
         panelBotones.add(btnEliminar);
-        add(panelBotones, BorderLayout.SOUTH);
+        contenedor.add(panelBotones, BorderLayout.SOUTH);
 
         btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
         btnEditar.addActionListener(e -> mostrarFormularioEditar());
@@ -103,7 +136,8 @@ public class FrmUsuario extends JFrame {
         String[] estados = {"Activo", "Inactivo"};
         JComboBox<String> cmbEstado = new JComboBox<>(estados);
 
-        JPanel panel = new JPanel(new GridLayout(0, 1));
+        JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.add(new JLabel("Nombre:"));
         panel.add(txtNombre);
         panel.add(new JLabel("Teléfono:"));
@@ -124,15 +158,12 @@ public class FrmUsuario extends JFrame {
                 nuevo.setClave(txtClave.getText());
                 nuevo.setEstado(cmbEstado.getSelectedItem().equals("Activo") ? 1 : 0);
 
-                if (dao.insertar(nuevo)) {
-                    JOptionPane.showMessageDialog(this, "Usuario agregado correctamente");
-                    recargarTabla();
-                } else {
-                    mostrarError("No se pudo agregar el usuario.");
-                }
+                services.insertar(nuevo);
 
-            } catch (SQLException e) {
-                mostrarError("Error al insertar usuario: " + e.getMessage());
+                JOptionPane.showMessageDialog(this, "Usuario agregado correctamente");
+                recargarTabla();
+            } catch (Exception e) {
+                mostrarError("Error al agregar usuario: " + e.getMessage());
             }
         }
     }
@@ -145,7 +176,7 @@ public class FrmUsuario extends JFrame {
         }
 
         try {
-            Usuario usuario = dao.obtenerPorId(id);
+            Usuario usuario = services.obtenerPorId(id);
             if (usuario == null) {
                 mostrarError("Usuario no encontrado.");
                 return;
@@ -153,17 +184,18 @@ public class FrmUsuario extends JFrame {
 
             JTextField txtNombre = new JTextField(usuario.getNombre());
             JTextField txtTelefono = new JTextField(usuario.getTelefono());
-            JTextField txtClave = new JTextField(usuario.getClave());
+            JTextField txtClave = new JTextField();
             String[] estados = {"Activo", "Inactivo"};
             JComboBox<String> cmbEstado = new JComboBox<>(estados);
             cmbEstado.setSelectedIndex(usuario.getEstado() == 1 ? 0 : 1);
 
-            JPanel panel = new JPanel(new GridLayout(0, 1));
+            JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
+            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             panel.add(new JLabel("Nombre:"));
             panel.add(txtNombre);
             panel.add(new JLabel("Teléfono:"));
             panel.add(txtTelefono);
-            panel.add(new JLabel("Clave:"));
+            panel.add(new JLabel("Nueva Clave:"));
             panel.add(txtClave);
             panel.add(new JLabel("Estado:"));
             panel.add(cmbEstado);
@@ -177,15 +209,13 @@ public class FrmUsuario extends JFrame {
                 usuario.setClave(txtClave.getText());
                 usuario.setEstado(cmbEstado.getSelectedItem().equals("Activo") ? 1 : 0);
 
-                if (dao.actualizar(usuario)) {
-                    JOptionPane.showMessageDialog(this, "Usuario actualizado correctamente.");
-                    recargarTabla();
-                } else {
-                    mostrarError("No se pudo actualizar el usuario.");
-                }
+                services.actualizar(usuario);
+
+                JOptionPane.showMessageDialog(this, "Usuario actualizado correctamente.");
+                recargarTabla();
             }
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             mostrarError("Error al editar usuario: " + ex.getMessage());
         }
     }
@@ -202,7 +232,7 @@ public class FrmUsuario extends JFrame {
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                if (dao.eliminar(id)) {
+                if (services.eliminar(id)) {
                     JOptionPane.showMessageDialog(this, "Usuario eliminado correctamente.");
                     recargarTabla();
                 } else {
@@ -231,5 +261,4 @@ public class FrmUsuario extends JFrame {
         });
     }
 }
-
 
