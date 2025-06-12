@@ -12,7 +12,6 @@ public class EstudianteDAL {
         this.conexion = conexion;
     }
 
-    // Crear
     public boolean insertar(Estudiante estudiante) throws SQLException {
         String sql = "INSERT INTO Estudiante (Nombre, Telefono, Estado) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -23,7 +22,6 @@ public class EstudianteDAL {
         }
     }
 
-    // Leer (uno por ID)
     public Estudiante obtenerPorId(int id) throws SQLException {
         String sql = "SELECT * FROM Estudiante WHERE idEstudiante = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -42,7 +40,6 @@ public class EstudianteDAL {
         return null;
     }
 
-    // Leer (todos)
     public List<Estudiante> obtenerTodos() throws SQLException {
         List<Estudiante> lista = new ArrayList<>();
         String sql = "SELECT * FROM Estudiante";
@@ -60,7 +57,6 @@ public class EstudianteDAL {
         return lista;
     }
 
-    // Actualizar
     public boolean actualizar(Estudiante estudiante) throws SQLException {
         String sql = "UPDATE Estudiante SET Nombre = ?, Telefono = ?, Estado = ? WHERE idEstudiante = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -72,7 +68,6 @@ public class EstudianteDAL {
         }
     }
 
-    // Eliminar
     public boolean eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Estudiante WHERE idEstudiante = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -80,5 +75,17 @@ public class EstudianteDAL {
             return stmt.executeUpdate() > 0;
         }
     }
-}
 
+    public boolean telefonoExiste(String telefono) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Estudiante WHERE Telefono = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, telefono);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+}
