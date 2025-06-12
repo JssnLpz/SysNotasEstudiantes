@@ -85,4 +85,24 @@ public class UsuarioDAL {
             return stmt.executeUpdate() > 0;
         }
     }
+    public Usuario autenticar(String nombre, String clave) throws SQLException {
+        String sql = "SELECT * FROM Usuario WHERE Nombre = ? AND Clave = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, nombre);
+            stmt.setString(2, clave);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Usuario(
+                            rs.getInt("idUsuario"),
+                            rs.getString("Nombre"),
+                            rs.getString("Clave"),
+                            rs.getString("Telefono"),
+                            rs.getInt("Estado")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
 }
