@@ -36,7 +36,7 @@ public class UsuarioServices {
             throw new Exception("El teléfono ya está registrado en otro usuario.");
         }
 
-        // Encriptar la clave solo si la cambió (esto depende de tu lógica)
+        // Encriptar la clave solo si la cambió
         usuario.setClave(encriptarSHA256(usuario.getClave()));
 
         return dao.actualizar(usuario);
@@ -54,7 +54,7 @@ public class UsuarioServices {
         return dao.eliminar(id);
     }
 
-    // Método auxiliar: verificar si teléfono ya existe
+    // Verificar si teléfono ya existe
     private boolean telefonoExiste(String telefono) throws SQLException {
         Usuario usuario = obtenerPorTelefono(telefono);
         return usuario != null;
@@ -70,7 +70,7 @@ public class UsuarioServices {
         return null;
     }
 
-    // Método para encriptar clave con SHA-256
+    // Encriptar clave con SHA-256
     private String encriptarSHA256(String clave) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(clave.getBytes());
