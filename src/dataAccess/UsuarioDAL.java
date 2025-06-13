@@ -84,13 +84,19 @@ public class UsuarioDAL {
             return stmt.executeUpdate() > 0;
         }
     }
-    public Usuario autenticar(String nombre, String clave) throws SQLException {
-        String sql = "SELECT * FROM Usuario WHERE Nombre = ? AND Clave = ?";
+
+    public Usuario autenticar(String telefono, String clave) throws SQLException {
+        String sql = "SELECT * FROM Usuario WHERE Telefono = ? AND Clave = ? AND Estado = 1";
+
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-            stmt.setString(1, nombre);
+            stmt.setString(1, telefono);
             stmt.setString(2, clave);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    // Mensaje de depuración para verificar qué usuario se está autenticando
+                    System.out.println("Intentando login con teléfono: " + telefono + " y clave: " + clave);
+
                     return new Usuario(
                             rs.getInt("idUsuario"),
                             rs.getString("Nombre"),
@@ -98,11 +104,12 @@ public class UsuarioDAL {
                             rs.getString("Telefono"),
                             rs.getInt("Estado")
                     );
+                } else {
+                    System.out.println("Autenticación fallida para: " + telefono);
                 }
             }
         }
         return null;
     }
-
 }
 

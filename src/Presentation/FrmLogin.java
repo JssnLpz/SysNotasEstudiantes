@@ -1,42 +1,43 @@
 package Presentation;
 
 import dataAccess.Conexion;
+import dataAccess.UsuarioDAL;
 import entities.Usuario;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class FrmLogin extends JFrame {
-    private JTextField txtUsuario;
+    private JTextField txtTelefono;
     private JPasswordField txtClave;
     private JButton btnIngresar;
+    private UsuarioDAL usuarioDAL;
 
     public FrmLogin() {
-        setTitle("Inicio de Sesión");
+        setTitle("🔑 Inicio de Sesión");
         setSize(400, 250);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Panel principal con borde y fondo
         JPanel panel = new JPanel();
         panel.setLayout(null);
-        panel.setBackground(new Color(245, 245, 245)); // Gris claro
+        panel.setBackground(new Color(245, 245, 245)); // Fondo gris claro
 
         JLabel lblTitulo = new JLabel("Login de Usuario");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
         lblTitulo.setBounds(130, 10, 200, 30);
         panel.add(lblTitulo);
 
-        JLabel lblUsuario = new JLabel("Usuario:");
-        lblUsuario.setBounds(50, 60, 80, 25);
-        panel.add(lblUsuario);
+        JLabel lblTelefono = new JLabel("Teléfono:");
+        lblTelefono.setBounds(50, 60, 80, 25);
+        panel.add(lblTelefono);
 
-        txtUsuario = new JTextField();
-        txtUsuario.setBounds(140, 60, 180, 25);
-        panel.add(txtUsuario);
+        txtTelefono = new JTextField();
+        txtTelefono.setBounds(140, 60, 180, 25);
+        panel.add(txtTelefono);
 
         JLabel lblClave = new JLabel("Contraseña:");
         lblClave.setBounds(50, 100, 80, 25);
@@ -55,48 +56,43 @@ public class FrmLogin extends JFrame {
 
         add(panel, BorderLayout.CENTER);
 
+        // Inicializar conexión y usuarioDAL
+        try {
+            Connection conexion = Conexion.getConnection();
+            usuarioDAL = new UsuarioDAL(conexion);
+        } catch (SQLException e) {
+            mostrarError("Error al conectar con la base de datos: " + e.getMessage());
+            return;
+        }
+
         btnIngresar.addActionListener(e -> validarLogin());
     }
 
     private void validarLogin() {
-        String usuario = txtUsuario.getText().trim();
+        String telefono = txtTelefono.getText().trim();
         String clave = new String(txtClave.getPassword()).trim();
 
-        if (usuario.isEmpty() || clave.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor ingrese usuario y contraseña");
+        if (telefono.isEmpty() || clave.isEmpty()) {
+            mostrarError("Por favor ingrese teléfono y contraseña.");
             return;
         }
 
-        String sql = "SELECT * FROM dbo.Usuario WHERE Nombre = ? AND Clave = ? AND Estado = 1";
-
-        try (Connection con = Conexion.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-
-            stmt.setString(1, usuario);
-            stmt.setString(2, clave);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Usuario u = new Usuario();
-                    u.setIdUsuario(rs.getInt("idUsuario"));
-                    u.setNombre(rs.getString("Nombre"));
-                    u.setClave(rs.getString("Clave"));
-                    u.setTelefono(rs.getString("Telefono"));
-                    u.setEstado(rs.getInt("Estado"));
-
-                    JOptionPane.showMessageDialog(this, "¡Bienvenida, " + u.getNombre() + "!");
-
-                    new FrmUsuario().setVisible(true);
-                    this.dispose();
-
-                } else {
-                    JOptionPane.showMessageDialog(this, "Usuario, contraseña o estado incorrecto");
-                }
+        try {
+            Usuario usuario = usuarioDAL.autenticar(telefono, clave);
+            if (usuario != null) {
+                JOptionPane.showMessageDialog(this, "¡Bienvenido, " + usuario.getNombre() + "!");
+                new FrmUsuario().setVisible(true);
+                this.dispose(); // Cierra la ventana de login
+            } else {
+                mostrarError("Teléfono, contraseña o estado incorrecto.");
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error en la conexión o consulta:\n" + ex.getMessage());
+        } catch (SQLException e) {
+            mostrarError("Error en la conexión o consulta: " + e.getMessage());
         }
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public static void main(String[] args) {
