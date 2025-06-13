@@ -2,59 +2,59 @@ package businessLogic;
 
 import dataAccess.EstudianteDAL;
 import entities.Estudiante;
+
 import java.sql.SQLException;
 import java.util.List;
 
 public class EstudianteServices {
-    private EstudianteDAL estudianteDAL;
+    private EstudianteDAL dao;
 
-    public EstudianteServices(EstudianteDAL estudianteDAL) {
-        this.estudianteDAL = estudianteDAL;
+    public EstudianteServices(EstudianteDAL dao) {
+        this.dao = dao;
     }
 
-    public boolean insertarEstudiante(Estudiante estudiante) throws SQLException {
-        if (estudiante.getNombre() == null || estudiante.getNombre().isEmpty()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío");
+    public boolean insertar(Estudiante estudiante) throws Exception {
+        if (telefonoExiste(estudiante.getTelefono())) {
+            throw new Exception("El teléfono ya está registrado en otro estudiante.");
         }
-        if (!TelefonoValido(estudiante.getTelefono())) {
-            throw new IllegalArgumentException("El teléfono solo puede contener números");
-        }
-        if (estudianteDAL.telefonoExiste(estudiante.getTelefono())) {
-            throw new IllegalArgumentException("El número de teléfono ya está registrado");
-        }
-        return estudianteDAL.insertar(estudiante);
+
+        return dao.insertar(estudiante);
     }
 
-    public Estudiante obtenerEstudiantePorId(int id) throws SQLException {
-        return estudianteDAL.obtenerPorId(id);
-    }
-
-    public List<Estudiante> obtenerTodosLosEstudiantes() throws SQLException {
-        return estudianteDAL.obtenerTodos();
-    }
-
-    public boolean actualizarEstudiante(Estudiante estudiante) throws SQLException {
-        if (estudiante.getIdEstudiante() <= 0) {
-            throw new IllegalArgumentException("ID de estudiante inválido");
-        }
-        if (!TelefonoValido(estudiante.getTelefono())) {
-            throw new IllegalArgumentException("El teléfono solo puede contener números");
+    public boolean actualizar(Estudiante estudiante) throws Exception {
+        Estudiante existente = obtenerPorTelefono(estudiante.getTelefono());
+        if (existente != null && existente.getIdEstudiante() != estudiante.getIdEstudiante()) {
+            throw new Exception("El teléfono ya está registrado en otro estudiante.");
         }
 
-        Estudiante existente = estudianteDAL.obtenerPorId(estudiante.getIdEstudiante());
-        if (existente != null && !existente.getTelefono().equals(estudiante.getTelefono())) {
-            if (estudianteDAL.telefonoExiste(estudiante.getTelefono())) {
-                throw new IllegalArgumentException("El número de teléfono ya está registrado");
+        return dao.actualizar(estudiante);
+    }
+
+    public Estudiante obtenerPorId(int id) throws SQLException {
+        return dao.obtenerPorId(id);
+    }
+
+    public List<Estudiante> obtenerTodos() throws SQLException {
+        return dao.obtenerTodos();
+    }
+
+    public boolean eliminar(int id) throws SQLException {
+        return dao.eliminar(id);
+    }
+
+    // Validación de teléfono único
+    private boolean telefonoExiste(String telefono) throws SQLException {
+        Estudiante estudiante = obtenerPorTelefono(telefono);
+        return estudiante != null;
+    }
+
+    private Estudiante obtenerPorTelefono(String telefono) throws SQLException {
+        List<Estudiante> lista = dao.obtenerTodos();
+        for (Estudiante e : lista) {
+            if (e.getTelefono().equals(telefono)) {
+                return e;
             }
         }
-        return estudianteDAL.actualizar(estudiante);
-    }
-
-    public boolean eliminarEstudiante(int id) throws SQLException {
-        return estudianteDAL.eliminar(id);
-    }
-
-    private boolean TelefonoValido(String telefono) {
-        return telefono.matches("\\d+");
+        return null;
     }
 }
