@@ -35,7 +35,7 @@ public class InscripcionServices {
         return inscripcionDAL.obtenerPorId(id);
     }
 
-    // Aquí está la validación
+    // Validación de inscripcion
     private void validarInscripcion(Inscripcion inscripcion) {
         if (inscripcion.getNota() < 0 || inscripcion.getNota() > 10) {
             throw new IllegalArgumentException("La nota debe estar entre 0 y 10.");
@@ -45,7 +45,7 @@ public class InscripcionServices {
             throw new IllegalArgumentException("El estado debe ser 0 (inactivo) o 1 (activo).");
         }
 
-        // También podemos validar que no haya campos vacíos de claves foráneas:
+        // Validar claves foráneas obligatorias
         if (inscripcion.getIdUsuario() <= 0 || inscripcion.getIdEstudiante() <= 0 || inscripcion.getIdCurso() <= 0) {
             throw new IllegalArgumentException("Debe seleccionar usuario, estudiante y curso.");
         }

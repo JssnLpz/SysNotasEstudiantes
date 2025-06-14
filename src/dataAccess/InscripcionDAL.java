@@ -36,7 +36,7 @@ public class InscripcionDAL {
                             rs.getInt("idInscripcion"),
                             rs.getInt("idUsuario"),
                             rs.getInt("idEstudiante"),
-                            rs.getInt("idCurso"),
+                            rs.getInt("idCurso"),   // CORRECTO: idCurso antes de nota
                             rs.getInt("nota"),
                             rs.getInt("estado")
                     );
@@ -57,7 +57,7 @@ public class InscripcionDAL {
                         rs.getInt("idInscripcion"),
                         rs.getInt("idUsuario"),
                         rs.getInt("idEstudiante"),
-                        rs.getInt("idCurso"),
+                        rs.getInt("idCurso"),   // CORRECTO
                         rs.getInt("nota"),
                         rs.getInt("estado")
                 ));
@@ -89,4 +89,3 @@ public class InscripcionDAL {
         }
     }
 }
-

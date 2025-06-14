@@ -11,15 +11,17 @@ public class Inscripcion {
     public Inscripcion() {
     }
 
-    public Inscripcion(int idInscripcion, int idUsuario, int idEstudiante, int nota, int idCurso, int estado) {
+    // Constructor corregido: el orden de parámetros debe coincidir con la asignación
+    public Inscripcion(int idInscripcion, int idUsuario, int idEstudiante, int idCurso, int nota, int estado) {
         this.idInscripcion = idInscripcion;
         this.idUsuario = idUsuario;
         this.idEstudiante = idEstudiante;
+        this.idCurso = idCurso;  // CORRECTO: idCurso va antes que nota
         this.nota = nota;
-        this.idCurso = idCurso;
         this.estado = estado;
     }
 
+    // Getters y setters
     public int getIdInscripcion() {
         return idInscripcion;
     }
