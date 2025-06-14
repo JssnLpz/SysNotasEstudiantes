@@ -1,5 +1,6 @@
 package Presentation;
 
+import businessLogic.UsuarioServices;
 import dataAccess.Conexion;
 import dataAccess.UsuarioDAL;
 import entities.Usuario;
@@ -7,13 +8,12 @@ import entities.Usuario;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
-import java.sql.SQLException;
 
 public class FrmLogin extends JFrame {
     private JTextField txtTelefono;
     private JPasswordField txtClave;
     private JButton btnIngresar;
-    private UsuarioDAL usuarioDAL;
+    private UsuarioServices usuarioServices;
 
     public FrmLogin() {
         setTitle("🔑 Inicio de Sesión");
@@ -56,11 +56,12 @@ public class FrmLogin extends JFrame {
 
         add(panel, BorderLayout.CENTER);
 
-        // Inicializar conexión y usuarioDAL
+        // Inicializar conexión y servicios
         try {
             Connection conexion = Conexion.getConnection();
-            usuarioDAL = new UsuarioDAL(conexion);
-        } catch (SQLException e) {
+            UsuarioDAL usuarioDAL = new UsuarioDAL(conexion);
+            usuarioServices = new UsuarioServices(usuarioDAL);
+        } catch (Exception e) {
             mostrarError("Error al conectar con la base de datos: " + e.getMessage());
             return;
         }
@@ -78,16 +79,14 @@ public class FrmLogin extends JFrame {
         }
 
         try {
-            Usuario usuario = usuarioDAL.autenticar(telefono, clave);
-            if (usuario != null) {
-                JOptionPane.showMessageDialog(this, "¡Bienvenido, " + usuario.getNombre() + "!");
-                new FrmUsuario().setVisible(true);
-                this.dispose(); // Cierra la ventana de login
-            } else {
-                mostrarError("Teléfono, contraseña o estado incorrecto.");
-            }
-        } catch (SQLException e) {
-            mostrarError("Error en la conexión o consulta: " + e.getMessage());
+            Usuario usuario = usuarioServices.login(telefono, clave);
+            this.dispose();  // Cierra login
+
+            // Abrir FrmUsuario con la lista de usuarios
+            FrmUsuario frmUsuario = new FrmUsuario();
+            frmUsuario.setVisible(true);
+        } catch (Exception e) {
+            mostrarError(e.getMessage());
         }
     }
 
@@ -99,4 +98,3 @@ public class FrmLogin extends JFrame {
         SwingUtilities.invokeLater(() -> new FrmLogin().setVisible(true));
     }
 }
-

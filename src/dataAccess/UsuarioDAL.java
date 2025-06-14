@@ -12,7 +12,7 @@ public class UsuarioDAL {
         this.conexion = conexion;
     }
 
-    // Crear
+    // Insertar
     public boolean insertar(Usuario usuario) throws SQLException {
         String sql = "INSERT INTO Usuario (Nombre, Telefono, Clave, Estado) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -24,46 +24,34 @@ public class UsuarioDAL {
         }
     }
 
-    // Leer (uno por ID)
+    // Obtener por ID
     public Usuario obtenerPorId(int id) throws SQLException {
         String sql = "SELECT * FROM Usuario WHERE idUsuario = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return new Usuario(
-                            rs.getInt("idUsuario"),
-                            rs.getString("Nombre"),
-                            rs.getString("Clave"),     // <- CORREGIDO: primero la clave
-                            rs.getString("Telefono"),  // <- luego el teléfono
-                            rs.getInt("Estado")
-                    );
+                    return mapearUsuario(rs);
                 }
             }
         }
         return null;
     }
 
-    // Leer (todos)
+    // Obtener todos
     public List<Usuario> obtenerTodos() throws SQLException {
         List<Usuario> lista = new ArrayList<>();
         String sql = "SELECT * FROM Usuario";
         try (Statement stmt = conexion.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                lista.add(new Usuario(
-                        rs.getInt("idUsuario"),
-                        rs.getString("Nombre"),
-                        rs.getString("Clave"),     // <- CORREGIDO
-                        rs.getString("Telefono"),  // <- CORREGIDO
-                        rs.getInt("Estado")
-                ));
+                lista.add(mapearUsuario(rs));
             }
         }
         return lista;
     }
 
-    // Actualizar
+    // Editar
     public boolean actualizar(Usuario usuario) throws SQLException {
         String sql = "UPDATE Usuario SET Nombre = ?, Telefono = ?, Clave = ?, Estado = ? WHERE idUsuario = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -85,31 +73,27 @@ public class UsuarioDAL {
         }
     }
 
-    public Usuario autenticar(String telefono, String clave) throws SQLException {
-        String sql = "SELECT * FROM Usuario WHERE Telefono = ? AND Clave = ? AND Estado = 1";
-
+    // Buscar por teléfono (para login)
+    public Usuario obtenerPorTelefono(String telefono) throws SQLException {
+        String sql = "SELECT * FROM Usuario WHERE Telefono = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setString(1, telefono);
-            stmt.setString(2, clave);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // Mensaje de depuración para verificar qué usuario se está autenticando
-                    System.out.println("Intentando login con teléfono: " + telefono + " y clave: " + clave);
-
-                    return new Usuario(
-                            rs.getInt("idUsuario"),
-                            rs.getString("Nombre"),
-                            rs.getString("Clave"),
-                            rs.getString("Telefono"),
-                            rs.getInt("Estado")
-                    );
-                } else {
-                    System.out.println("Autenticación fallida para: " + telefono);
+                    return mapearUsuario(rs);
                 }
             }
         }
         return null;
     }
-}
 
+    private Usuario mapearUsuario(ResultSet rs) throws SQLException {
+        return new Usuario(
+                rs.getInt("idUsuario"),
+                rs.getString("Nombre"),
+                rs.getString("Clave"),
+                rs.getString("Telefono"),
+                rs.getInt("Estado")
+        );
+    }
+}
