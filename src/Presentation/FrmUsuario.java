@@ -29,9 +29,9 @@ public class FrmUsuario extends JFrame {
         add(contenedor);
 
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnAgregar = new JButton("➕ Agregar");
-        JButton btnEditar = new JButton("✏️ Editar");
-        JButton btnEliminar = new JButton("🗑️ Eliminar");
+        JButton btnAgregar = new JButton("Agregar");
+        JButton btnEditar = new JButton("Editar");
+        JButton btnEliminar = new JButton("Eliminar");
 
         JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
         for (JButton btn : botones) {
@@ -103,9 +103,9 @@ public class FrmUsuario extends JFrame {
         cargarTabla(contenedor);
 
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnAgregar = new JButton("➕ Agregar");
-        JButton btnEditar = new JButton("✏️ Editar");
-        JButton btnEliminar = new JButton("🗑️ Eliminar");
+        JButton btnAgregar = new JButton("Agregar");
+        JButton btnEditar = new JButton("Editar");
+        JButton btnEliminar = new JButton("Eliminar");
 
         JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
         for (JButton btn : botones) {
@@ -261,4 +261,3 @@ public class FrmUsuario extends JFrame {
         });
     }
 }
-

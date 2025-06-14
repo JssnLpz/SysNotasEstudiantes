@@ -16,29 +16,21 @@ public class UsuarioServices {
     }
 
     public boolean insertar(Usuario usuario) throws Exception {
-        // Validar teléfono único
+        validarCampos(usuario);
         if (telefonoExiste(usuario.getTelefono())) {
-            throw new Exception("El teléfono ya está registrado en otro usuario.");
+            throw new Exception("El teléfono ya está registrado.");
         }
-
-        // Encriptar la clave
-        String claveEncriptada = encriptarSHA256(usuario.getClave());
-        usuario.setClave(claveEncriptada);
-
-        // Insertar en base de datos
+        usuario.setClave(encriptarSHA256(usuario.getClave()));
         return dao.insertar(usuario);
     }
 
     public boolean actualizar(Usuario usuario) throws Exception {
-        // Validar teléfono único (excepto el propio usuario)
+        validarCampos(usuario);
         Usuario existente = obtenerPorTelefono(usuario.getTelefono());
         if (existente != null && existente.getIdUsuario() != usuario.getIdUsuario()) {
-            throw new Exception("El teléfono ya está registrado en otro usuario.");
+            throw new Exception("El teléfono ya está registrado.");
         }
-
-        // Encriptar la clave solo si la cambió
         usuario.setClave(encriptarSHA256(usuario.getClave()));
-
         return dao.actualizar(usuario);
     }
 
@@ -54,28 +46,19 @@ public class UsuarioServices {
         return dao.eliminar(id);
     }
 
-    // Verificar si teléfono ya existe
     private boolean telefonoExiste(String telefono) throws SQLException {
         Usuario usuario = obtenerPorTelefono(telefono);
         return usuario != null;
     }
 
     private Usuario obtenerPorTelefono(String telefono) throws SQLException {
-        List<Usuario> lista = dao.obtenerTodos();
-        for (Usuario u : lista) {
-            if (u.getTelefono().equals(telefono)) {
-                return u;
-            }
-        }
-        return null;
+        return dao.obtenerPorTelefono(telefono);
     }
 
-    // Encriptar clave con SHA-256
     private String encriptarSHA256(String clave) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(clave.getBytes());
         StringBuilder hexString = new StringBuilder();
-
         for (byte b : hash) {
             String hex = Integer.toHexString(0xff & b);
             if (hex.length() == 1)
@@ -83,5 +66,34 @@ public class UsuarioServices {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    private void validarCampos(Usuario usuario) throws Exception {
+        if (usuario.getNombre() == null || usuario.getNombre().trim().isEmpty())
+            throw new Exception("El nombre no puede estar vacío.");
+        if (usuario.getClave() == null || usuario.getClave().trim().isEmpty())
+            throw new Exception("La clave no puede estar vacía.");
+        if (usuario.getClave().length() < 6)
+            throw new Exception("La clave debe tener al menos 6 caracteres.");
+        if (usuario.getTelefono() == null || usuario.getTelefono().trim().isEmpty())
+            throw new Exception("El teléfono no puede estar vacío.");
+        if (!usuario.getTelefono().matches("\\d+"))
+            throw new Exception("El teléfono solo puede contener números.");
+    }
+
+    // Validaciones para el login
+    public Usuario login(String telefono, String clave) throws Exception {
+        Usuario usuario = dao.obtenerPorTelefono(telefono);
+        if (usuario == null) {
+            throw new Exception("El teléfono no está registrado.");
+        }
+        if (usuario.getEstado() != 1) {
+            throw new Exception("El usuario está inactivo.");
+        }
+        String claveEncriptada = encriptarSHA256(clave);
+        if (!usuario.getClave().equals(claveEncriptada)) {
+            throw new Exception("La clave es incorrecta.");
+        }
+        return usuario;
     }
 }
