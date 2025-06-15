@@ -12,6 +12,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+// Agregar formularios al menú
+import Presentation.FrmUsuario;
+import Presentation.FrmEstudiante;
+import Presentation.FrmInscripcion;
+
 public class FrmCurso extends JFrame {
 
     private JTable tabla;
@@ -24,6 +29,8 @@ public class FrmCurso extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
+
+        crearMenu(); // Menú superior
 
         JPanel contenedor = new JPanel(new BorderLayout(10, 10));
         contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -64,10 +71,30 @@ public class FrmCurso extends JFrame {
         btnEliminar.addActionListener(e -> eliminarCursoSeleccionado());
     }
 
+    private void crearMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuFormularios = new JMenu("Formularios");
+
+        JMenuItem itemUsuarios = new JMenuItem("Usuarios");
+        itemUsuarios.addActionListener(e -> new FrmUsuario().setVisible(true));
+
+        JMenuItem itemEstudiantes = new JMenuItem("Estudiantes");
+        itemEstudiantes.addActionListener(e -> new FrmEstudiante().setVisible(true));
+
+        JMenuItem itemInscripciones = new JMenuItem("Inscripciones");
+        itemInscripciones.addActionListener(e -> new FrmInscripcion().setVisible(true));
+
+        menuFormularios.add(itemUsuarios);
+        menuFormularios.add(itemEstudiantes);
+        menuFormularios.add(itemInscripciones);
+
+        menuBar.add(menuFormularios);
+        setJMenuBar(menuBar);
+    }
+
     private void cargarTabla(JPanel contenedor) {
         try {
             List<Curso> listaCursos = services.obtenerTodos();
-
             String[] columnas = {"ID Curso", "Nombre", "Descripción", "Estado"};
             Object[][] datos = new Object[listaCursos.size()][4];
 
@@ -93,39 +120,8 @@ public class FrmCurso extends JFrame {
         }
     }
 
-    private void recargarTabla() {
-        getContentPane().removeAll();
-        setLayout(new BorderLayout(10, 10));
-        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
-        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        add(contenedor);
-        cargarTabla(contenedor);
-
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnAgregar = new JButton("➕ Agregar");
-        JButton btnEditar = new JButton("✏️ Editar");
-        JButton btnEliminar = new JButton("🗑️ Eliminar");
-
-        JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
-        for (JButton btn : botones) {
-            btn.setFocusPainted(false);
-            btn.setBackground(new Color(59, 89, 182));
-            btn.setForeground(Color.WHITE);
-            btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            btn.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-        }
-
-        panelBotones.add(btnAgregar);
-        panelBotones.add(btnEditar);
-        panelBotones.add(btnEliminar);
-        contenedor.add(panelBotones, BorderLayout.SOUTH);
-
-        btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
-        btnEditar.addActionListener(e -> mostrarFormularioEditar());
-        btnEliminar.addActionListener(e -> eliminarCursoSeleccionado());
-
-        revalidate();
-        repaint();
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     private void mostrarFormularioAgregar() {
@@ -231,14 +227,46 @@ public class FrmCurso extends JFrame {
         }
     }
 
+    private void recargarTabla() {
+        getContentPane().removeAll();
+        setLayout(new BorderLayout(10, 10));
+        crearMenu();
+        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
+        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(contenedor);
+        cargarTabla(contenedor);
+
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnAgregar = new JButton("➕ Agregar");
+        JButton btnEditar = new JButton("✏️ Editar");
+        JButton btnEliminar = new JButton("🗑️ Eliminar");
+
+        JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
+        for (JButton btn : botones) {
+            btn.setFocusPainted(false);
+            btn.setBackground(new Color(59, 89, 182));
+            btn.setForeground(Color.WHITE);
+            btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            btn.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        }
+
+        panelBotones.add(btnAgregar);
+        panelBotones.add(btnEditar);
+        panelBotones.add(btnEliminar);
+        contenedor.add(panelBotones, BorderLayout.SOUTH);
+
+        btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
+        btnEditar.addActionListener(e -> mostrarFormularioEditar());
+        btnEliminar.addActionListener(e -> eliminarCursoSeleccionado());
+
+        revalidate();
+        repaint();
+    }
+
     private int obtenerIdCursoSeleccionado() {
         int fila = tabla.getSelectedRow();
         if (fila == -1) return -1;
         return Integer.parseInt(tabla.getValueAt(fila, 0).toString());
-    }
-
-    private void mostrarError(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public static void main(String[] args) {
@@ -248,3 +276,4 @@ public class FrmCurso extends JFrame {
         });
     }
 }
+

@@ -11,6 +11,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+// Agregar formularios al menú
+import Presentation.FrmUsuario;
+import Presentation.FrmEstudiante;
+import Presentation.FrmCurso;
+
 public class FrmInscripcion extends JFrame {
 
     private JTable tabla;
@@ -27,6 +32,9 @@ public class FrmInscripcion extends JFrame {
         JPanel contenedor = new JPanel(new BorderLayout(10, 10));
         contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         add(contenedor);
+
+        // Aquí llamas a crearMenu para que el menú aparezca
+        crearMenu();
 
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnAgregar = new JButton("➕ Agregar");
@@ -59,6 +67,27 @@ public class FrmInscripcion extends JFrame {
 
         btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
         btnEditar.addActionListener(e -> mostrarFormularioEditar());
+    }
+
+    private void crearMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuFormularios = new JMenu("Formularios");
+
+        JMenuItem itemUsuarios = new JMenuItem("Usuarios");
+        itemUsuarios.addActionListener(e -> new FrmUsuario().setVisible(true));
+
+        JMenuItem itemCursos = new JMenuItem("Cursos");
+        itemCursos.addActionListener(e -> new FrmCurso().setVisible(true));
+
+        JMenuItem itemEstudiantes = new JMenuItem("Estudiantes");
+        itemEstudiantes.addActionListener(e -> new FrmEstudiante().setVisible(true));
+
+        menuFormularios.add(itemUsuarios);
+        menuFormularios.add(itemCursos);
+        menuFormularios.add(itemEstudiantes);
+
+        menuBar.add(menuFormularios);
+        setJMenuBar(menuBar);
     }
 
     private void cargarTabla(JPanel contenedor) {

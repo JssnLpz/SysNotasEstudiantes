@@ -11,6 +11,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+// Agregar formularios al menú
+import Presentation.FrmUsuario;
+import Presentation.FrmCurso;
+import Presentation.FrmInscripcion;
+
 public class FrmEstudiante extends JFrame {
 
     private JTable tabla;
@@ -28,10 +33,13 @@ public class FrmEstudiante extends JFrame {
         contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         add(contenedor);
 
+        // Llamada para crear el menú en la ventana
+        crearMenu();
+
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnAgregar = new JButton("➕ Agregar");
-        JButton btnEditar = new JButton("✏️ Editar");
-        JButton btnEliminar = new JButton("🗑️ Eliminar");
+        JButton btnAgregar = new JButton(" Agregar");
+        JButton btnEditar = new JButton(" Editar");
+        JButton btnEliminar = new JButton(" Eliminar");
 
         JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
         for (JButton btn : botones) {
@@ -61,6 +69,27 @@ public class FrmEstudiante extends JFrame {
         btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
         btnEditar.addActionListener(e -> mostrarFormularioEditar());
         btnEliminar.addActionListener(e -> eliminarSeleccionado());
+    }
+
+    private void crearMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuFormularios = new JMenu("Formularios");
+
+        JMenuItem itemUsuarios = new JMenuItem("Usuarios");
+        itemUsuarios.addActionListener(e -> new FrmUsuario().setVisible(true));
+
+        JMenuItem itemCursos = new JMenuItem("Cursos");
+        itemCursos.addActionListener(e -> new FrmCurso().setVisible(true));
+
+        JMenuItem itemInscripciones = new JMenuItem("Inscripciones");
+        itemInscripciones.addActionListener(e -> new FrmInscripcion().setVisible(true));
+
+        menuFormularios.add(itemUsuarios);
+        menuFormularios.add(itemCursos);
+        menuFormularios.add(itemInscripciones);
+
+        menuBar.add(menuFormularios);
+        setJMenuBar(menuBar);
     }
 
     private void cargarTabla(JPanel contenedor) {
@@ -121,6 +150,9 @@ public class FrmEstudiante extends JFrame {
         btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
         btnEditar.addActionListener(e -> mostrarFormularioEditar());
         btnEliminar.addActionListener(e -> eliminarSeleccionado());
+
+        // Volver a establecer el menú para que no desaparezca después de recargar
+        crearMenu();
 
         revalidate();
         repaint();
@@ -243,3 +275,4 @@ public class FrmEstudiante extends JFrame {
         });
     }
 }
+

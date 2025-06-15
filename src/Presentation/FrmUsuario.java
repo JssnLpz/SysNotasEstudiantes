@@ -11,23 +11,43 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+// Importación de formularios
+import Presentation.FrmEstudiante;
+import Presentation.FrmCurso;
+import Presentation.FrmInscripcion;
+
 public class FrmUsuario extends JFrame {
 
     private JTable tabla;
     private UsuarioServices services;
     private Connection conexion;
+    private JPanel contenedor;  // Hacemos contenedor global
 
     public FrmUsuario() {
-        setTitle("\uD83D\uDC64 Lista de Usuarios");
+        setTitle("Lista de Usuarios");
         setSize(700, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
 
-        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
-        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        add(contenedor);
+        crearMenu(); // ✅ Menú antes que add()
 
+        contenedor = new JPanel(new BorderLayout(10, 10));
+        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(contenedor, BorderLayout.CENTER);
+
+        try {
+            conexion = Conexion.getConnection();
+            UsuarioDAL dao = new UsuarioDAL(conexion);
+            services = new UsuarioServices(dao);
+        } catch (SQLException e) {
+            mostrarError("Error al conectar con la base de datos: " + e.getMessage());
+            return;
+        }
+
+        cargarTabla();
+
+        // Botones
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnAgregar = new JButton("Agregar");
         JButton btnEditar = new JButton("Editar");
@@ -47,23 +67,35 @@ public class FrmUsuario extends JFrame {
         panelBotones.add(btnEliminar);
         contenedor.add(panelBotones, BorderLayout.SOUTH);
 
-        try {
-            conexion = Conexion.getConnection();
-            UsuarioDAL dao = new UsuarioDAL(conexion);
-            services = new UsuarioServices(dao);
-        } catch (SQLException e) {
-            mostrarError("Error al conectar con la base de datos: " + e.getMessage());
-            return;
-        }
-
-        cargarTabla(contenedor);
-
         btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
         btnEditar.addActionListener(e -> mostrarFormularioEditar());
         btnEliminar.addActionListener(e -> eliminarUsuarioSeleccionado());
     }
 
-    private void cargarTabla(JPanel contenedor) {
+    private void crearMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuFormularios = new JMenu("Formularios");
+
+        JMenuItem itemEstudiantes = new JMenuItem("Estudiantes");
+        itemEstudiantes.addActionListener(e -> new FrmEstudiante().setVisible(true));
+
+        JMenuItem itemCursos = new JMenuItem("Cursos");
+        itemCursos.addActionListener(e -> new FrmCurso().setVisible(true));
+
+        JMenuItem itemInscripciones = new JMenuItem("Inscripciones");
+        itemInscripciones.addActionListener(e -> new FrmInscripcion().setVisible(true));
+
+        menuFormularios.add(itemEstudiantes);
+        menuFormularios.add(itemCursos);
+        menuFormularios.add(itemInscripciones);
+
+        menuBar.add(menuFormularios);
+        setJMenuBar(menuBar);
+    }
+
+    private void cargarTabla() {
+        contenedor.removeAll();
+
         try {
             List<Usuario> listaUsuarios = services.obtenerTodos();
 
@@ -89,52 +121,19 @@ public class FrmUsuario extends JFrame {
             JScrollPane scroll = new JScrollPane(tabla);
             contenedor.add(scroll, BorderLayout.CENTER);
 
+            revalidate();
+            repaint();
+
         } catch (SQLException e) {
             mostrarError("Error al obtener usuarios: " + e.getMessage());
         }
-    }
-
-    private void recargarTabla() {
-        getContentPane().removeAll();
-        setLayout(new BorderLayout(10, 10));
-        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
-        contenedor.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        add(contenedor);
-        cargarTabla(contenedor);
-
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnAgregar = new JButton("Agregar");
-        JButton btnEditar = new JButton("Editar");
-        JButton btnEliminar = new JButton("Eliminar");
-
-        JButton[] botones = {btnAgregar, btnEditar, btnEliminar};
-        for (JButton btn : botones) {
-            btn.setFocusPainted(false);
-            btn.setBackground(new Color(59, 89, 182));
-            btn.setForeground(Color.WHITE);
-            btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            btn.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-        }
-
-        panelBotones.add(btnAgregar);
-        panelBotones.add(btnEditar);
-        panelBotones.add(btnEliminar);
-        contenedor.add(panelBotones, BorderLayout.SOUTH);
-
-        btnAgregar.addActionListener(e -> mostrarFormularioAgregar());
-        btnEditar.addActionListener(e -> mostrarFormularioEditar());
-        btnEliminar.addActionListener(e -> eliminarUsuarioSeleccionado());
-
-        revalidate();
-        repaint();
     }
 
     private void mostrarFormularioAgregar() {
         JTextField txtNombre = new JTextField();
         JTextField txtTelefono = new JTextField();
         JTextField txtClave = new JTextField();
-        String[] estados = {"Activo", "Inactivo"};
-        JComboBox<String> cmbEstado = new JComboBox<>(estados);
+        JComboBox<String> cmbEstado = new JComboBox<>(new String[]{"Activo", "Inactivo"});
 
         JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -159,9 +158,8 @@ public class FrmUsuario extends JFrame {
                 nuevo.setEstado(cmbEstado.getSelectedItem().equals("Activo") ? 1 : 0);
 
                 services.insertar(nuevo);
-
-                JOptionPane.showMessageDialog(this, "Usuario agregado correctamente");
-                recargarTabla();
+                JOptionPane.showMessageDialog(this, "Usuario agregado correctamente.");
+                cargarTabla();
             } catch (Exception e) {
                 mostrarError("Error al agregar usuario: " + e.getMessage());
             }
@@ -171,7 +169,7 @@ public class FrmUsuario extends JFrame {
     private void mostrarFormularioEditar() {
         int id = obtenerIdUsuarioSeleccionado();
         if (id == -1) {
-            mostrarError("Debe seleccionar un usuario de la tabla.");
+            mostrarError("Debe seleccionar un usuario.");
             return;
         }
 
@@ -185,8 +183,7 @@ public class FrmUsuario extends JFrame {
             JTextField txtNombre = new JTextField(usuario.getNombre());
             JTextField txtTelefono = new JTextField(usuario.getTelefono());
             JTextField txtClave = new JTextField();
-            String[] estados = {"Activo", "Inactivo"};
-            JComboBox<String> cmbEstado = new JComboBox<>(estados);
+            JComboBox<String> cmbEstado = new JComboBox<>(new String[]{"Activo", "Inactivo"});
             cmbEstado.setSelectedIndex(usuario.getEstado() == 1 ? 0 : 1);
 
             JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
@@ -210,36 +207,35 @@ public class FrmUsuario extends JFrame {
                 usuario.setEstado(cmbEstado.getSelectedItem().equals("Activo") ? 1 : 0);
 
                 services.actualizar(usuario);
-
-                JOptionPane.showMessageDialog(this, "Usuario actualizado correctamente.");
-                recargarTabla();
+                JOptionPane.showMessageDialog(this, "Usuario actualizado.");
+                cargarTabla();
             }
 
-        } catch (Exception ex) {
-            mostrarError("Error al editar usuario: " + ex.getMessage());
+        } catch (Exception e) {
+            mostrarError("Error al editar usuario: " + e.getMessage());
         }
     }
 
     private void eliminarUsuarioSeleccionado() {
         int id = obtenerIdUsuarioSeleccionado();
         if (id == -1) {
-            mostrarError("Debe seleccionar un usuario de la tabla.");
+            mostrarError("Debe seleccionar un usuario.");
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Estás seguro que deseas eliminar este usuario?",
-                "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Eliminar este usuario?",
+                "Confirmación", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 if (services.eliminar(id)) {
-                    JOptionPane.showMessageDialog(this, "Usuario eliminado correctamente.");
-                    recargarTabla();
+                    JOptionPane.showMessageDialog(this, "Usuario eliminado.");
+                    cargarTabla();
                 } else {
                     mostrarError("No se pudo eliminar el usuario.");
                 }
-            } catch (SQLException ex) {
-                mostrarError("Error al eliminar: " + ex.getMessage());
+            } catch (SQLException e) {
+                mostrarError("Error al eliminar: " + e.getMessage());
             }
         }
     }
@@ -256,8 +252,10 @@ public class FrmUsuario extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            FrmUsuario ventana = new FrmUsuario();
-            ventana.setVisible(true);
+            new FrmUsuario().setVisible(true);
         });
     }
 }
+
+
+
